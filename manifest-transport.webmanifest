@@ -1,0 +1,38 @@
+{
+ "id": "/transport.html",
+ "name": "Agridiam Transport RH",
+ "short_name": "Transport RH",
+ "description": "Transport du personnel, voiture de service, heures supplémentaires et factures du prestataire",
+ "start_url": "/transport.html",
+ "scope": "/",
+ "display": "standalone",
+ "orientation": "any",
+ "lang": "fr",
+ "dir": "ltr",
+ "background_color": "#1F3864",
+ "theme_color": "#1F3864",
+ "categories": [
+  "business",
+  "productivity"
+ ],
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
