@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AGRIDIAM : remettre les données d'origine</title>
+<style>body{font-family:Arial,sans-serif;max-width:640px;margin:30px auto;padding:0 14px;color:#1b1b1b}h1{color:#1F3864;font-size:20px}.box{border:1px solid #d5dae3;border-radius:8px;padding:14px;margin:14px 0}button{background:#b3261e;color:#fff;border:0;border-radius:6px;padding:9px 14px;font-size:14px;cursor:pointer}.ok{color:#1e7b34;font-weight:bold}a{color:#1F3864}</style></head><body>
+<h1>Remettre les données d'origine</h1>
+<p>À utiliser seulement si Caisse+ ou le Suivi affiche d'anciennes données alors que tu viens de mettre le nouveau dossier.
+<b>Avant : fais « 💾 Sauvegarde » dans le module concerné</b>, car cette page efface les données de ce module sur cet ordinateur. Les données d'origine (2023 à 2026) reviennent à la prochaine ouverture.</p>
+<div class="box"><b>Caisse+</b><br><br><button onclick="r('c')">Remettre les données d'origine de Caisse+</button> <span id="mc" class="ok"></span></div>
+<div class="box"><b>Suivi des versements</b><br><br><button onclick="r('s')">Remettre les données d'origine du Suivi</button> <span id="ms" class="ok"></span></div>
+<p><a href="index.html">← Retour au menu</a></p>
+<script>
+function r(w){
+  if(!confirm('Effacer les données de ce module sur cet ordinateur et remettre les données d\'origine ?'))return;
+  if(w==='c'){try{localStorage.removeItem('agridiam_caisse_clients_multi_v1')}catch(e){}document.getElementById('mc').textContent=' ✔ Fait. Ouvre Caisse+ depuis le menu.'}
+  else{var q=indexedDB.deleteDatabase('agridiam-suivi-v1');q.onsuccess=q.onblocked=function(){document.getElementById('ms').textContent=' ✔ Fait. Ouvre le Suivi depuis le menu.'};q.onerror=function(){document.getElementById('ms').textContent=' Impossible'}}
+}
+</script></body></html>

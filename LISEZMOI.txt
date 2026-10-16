@@ -1,0 +1,54 @@
+AGRIDIAM sur ton PC (sans internet, sans Supabase, sans GitHub)
+================================================================
+
+INSTALLATION
+  1. Clic droit sur AGRIDIAM_PC.zip > "Extraire tout" > choisis un dossier fixe, par exemple C:\AGRIDIAM
+     (ne déplace plus ce dossier après).
+  2. Ouvre le dossier et double-clique sur LANCER_AGRIDIAM.bat : AGRIDIAM s'ouvre dans Chrome (ou Edge).
+  3. Clic droit sur LANCER_AGRIDIAM.bat > Envoyer vers > Bureau (créer un raccourci) pour le relancer facilement.
+  Lance toujours AGRIDIAM avec ce raccourci, avec le même navigateur : les données sont gardées dans ce navigateur.
+
+PREMIÈRE CONNEXION
+  Comme avant : au premier lancement, crée le compte administrateur (nom + mot de passe).
+
+DONNÉES CHARGÉES AU PREMIER LANCEMENT
+  Caisse+      2023, 2024, 2025 et 2026 complets, soldes d'ouverture et de clôture comme dans tes fichiers Excel
+               (2023 : 204 189,80 / 2024 : 596 500,85 / 2025 : 18 901 125,85 / 2026 jusqu'au dernier fichier fourni : 1 818 525,85)
+  Stock+       le stock réel de départ, les 10 services, les achats, les sorties diverses
+  Transport    circuits, sorties de la voiture, heures supplémentaires, factures du prestataire
+  Suivi        entrées et versements 2023 à 2026, déjà rapprochés
+
+SI TU AVAIS DÉJÀ OUVERT L'ANCIEN DOSSIER
+  Les anciennes données restent dans le navigateur. Fais d'abord la sauvegarde du module, puis ouvre
+  reinitialiser.html (dans le dossier) pour remettre les données d'origine de Caisse+ ou du Suivi.
+
+ENREGISTREMENT AUTOMATIQUE
+  Comme avant : chaque modification est enregistrée toute seule sur ton PC, dans Caisse+, Stock+, Transport
+  et dans le nouveau module "AGRIDIAM Suivi". Rien à enregistrer à la main.
+  Le Suivi garde en plus une copie de sécurité par jour (14 derniers jours).
+
+LE SUIVI DES VERSEMENTS (nouveau)
+  Menu > "AGRIDIAM Suivi". Les données 2023 à 2026 sont déjà chargées et rapprochées au premier lancement.
+  Clients        total, versé et reste à verser par client (le vrai client = REMETTANT)
+  Entrées        chaque entrée, son statut (VERSÉ / PARTIEL / RESTE), les versements qui la couvrent, la date et le délai
+  Versements     chaque versement, les entrées couvertes, le non relié en rouge ; 📎 pour scanner le bordereau
+  À vérifier     rapprochements pas sûrs : "Valider" ou "Supprimer"
+  Rapprocher     cherche les versements pas encore reliés ; tu coches ce qui est juste, puis "Enregistrer"
+  Relier         bouton sur une entrée ou un versement pour relier à la main
+  Importer       ajoute un brouillard Excel (CAISSE_2027...) ou met à jour une année ; sauvegarde et restauration
+  ⬇️ Excel       exporte le tableau affiché
+  Les rapprochements "à vérifier" viennent de la méthode automatique (même montant ou même nom) : à contrôler avec les bordereaux.
+
+SAUVEGARDES (important)
+  Les données sont dans le navigateur de ce PC. Si tu vides les données de navigation, ou si tu changes de navigateur
+  ou de PC, elles ne suivent pas. Donc, de temps en temps (par exemple chaque fin de mois) :
+    - Suivi > Importer > "💾 Sauvegarder (fichier)"
+    - Caisse+, Stock+, Transport : bouton "💾 Sauvegarde"
+  Mets ces fichiers sur une clé USB ou un autre disque. Pour récupérer : "📂 Restaurer" au même endroit.
+
+REPRENDRE LES DONNÉES DU SITE EN LIGNE
+  Sur l'ancien site : bouton "💾 Sauvegarde" dans chaque module.
+  Sur le PC : "📂 Restaurer" dans le même module, avec ces fichiers.
+
+SOLDES À REPORTER (fin d'année)
+  2023 : 204 189,80   2024 : 596 500,85   2025 : 18 901 125,85   2026 (à fin septembre) : 1 818 525,85

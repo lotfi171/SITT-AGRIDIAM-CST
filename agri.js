@@ -3,7 +3,7 @@
   window.__agri = 1;
 
   var MOD = (location.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';
-  var NAMES = { caisse: 'Caisse+', stock: 'Stock+', transport: 'Transport', index: 'Menu' };
+  var NAMES = { caisse: 'Caisse+', stock: 'Stock+', transport: 'Transport', suivi: 'Suivi versements', index: 'Menu' };
   var NAVY = '#1F3864';
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -166,8 +166,9 @@
 
   /* ---------- Panneau des scans ---------- */
   var urls = [];
-  function openPanel() {
-    var all = false, q = '';
+  function openPanel(pre) {
+    pre = typeof pre === 'string' ? pre : '';
+    var all = false, q = pre.toLowerCase();
     var o = el('<div class="agro"><div class="agrp"><div class="agrh"><b>📎 Scans — ' + esc(NAMES[MOD] || MOD) + '</b><button data-a="x">✕ Fermer</button></div><div class="agrb">' +
       '<input type="text" id="agrl" placeholder="Référence du scan (ex. chèque n° 123, facture, bon de sortie…)">' +
       '<div class="agrrow"><button class="pri" data-a="cam">📷 Prendre une photo</button><button class="pri" data-a="fil">📁 Choisir un fichier (image ou PDF)</button></div>' +
@@ -179,6 +180,7 @@
       '<p style="font-size:12px;color:#6b7690;margin:6px 0 0">' + (CL() ? 'Les scans sont enregistrés en ligne et visibles par les utilisateurs autorisés.' : 'Les scans restent dans ce navigateur, sur cet appareil. Fais une sauvegarde de temps en temps.') + '</p>' +
       '</div></div></div>');
     document.body.appendChild(o);
+    if (pre) { $('#agrl', o).value = pre; $('#agrq', o).value = pre; }
     if (CL()) { var xb = $('[data-a=exp]', o); if (xb && xb.parentNode) xb.parentNode.style.display = 'none'; }
 
     function render() {
@@ -271,7 +273,8 @@
     if ($('#agrbar')) return;
     var b = el('<div id="agrbar"><button id="agrbs">📎 Scans</button>' + (MOD === 'index' ? '' : '<button id="agrbp">🖨️ Imprimer</button>') + '</div>');
     document.body.appendChild(b);
-    $('#agrbs').onclick = openPanel;
+    $('#agrbs').onclick = function () { openPanel(); };
+    window.agriScansPanel = openPanel;
     var p = $('#agrbp'); if (p) p.onclick = window.agriPrintScreen;
   }
   /* ---------- Installation comme une appli ---------- */
@@ -308,7 +311,7 @@
   function init() {
     bar();
     if (standalone) addBtn('agrbr', '🔄 Mettre à jour', refresh);
-    else setTimeout(function () { addBtn('agrbi', '📲 Installer', installClick); }, 2500);
+    
   }
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
 })();

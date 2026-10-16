@@ -147,7 +147,7 @@
   /* ---------- Écrans de connexion ---------- */
   function gate(mode, info) {
     var g = $('#agrgate'); if (g) g.remove();
-    var h = '<div id="agrgate"><form class="agrc" autocomplete="on"><img src="/icon-192.png" alt=""><h1>AGRIDIAM</h1>';
+    var h = '<div id="agrgate"><form class="agrc" autocomplete="on"><img src="icon-192.png" alt=""><h1>AGRIDIAM</h1>';
     if (mode === 'login') {
       h += '<p class="s">Connecte-toi pour accéder à l\u2019application.</p>' +
         '<label for="agre">Adresse e-mail</label><input id="agre" type="email" name="username" autocomplete="username" required>' +
@@ -215,8 +215,8 @@
         return;
       }
       var g = $('#agrgate'); if (g) g.remove();
-      if (MOD === 'caisse' && prof.role !== 'admin') {
-        document.body.appendChild(el('<div id="agrgate"><div class="agrc"><img src="/icon-192.png" alt=""><h1>Accès réservé</h1><p class="s">La caisse est réservée à l\u2019administrateur.</p><a href="/" class="pri" style="display:block;text-align:center;text-decoration:none;color:#fff;background:' + NAVY + ';padding:11px;border-radius:6px">Retour au menu</a></div></div>'));
+      if ((MOD === 'caisse' || MOD === 'suivi') && prof.role !== 'admin') {
+        document.body.appendChild(el('<div id="agrgate"><div class="agrc"><img src="icon-192.png" alt=""><h1>Accès réservé</h1><p class="s">Cette page est réservée à l\u2019administrateur.</p><a href="/" class="pri" style="display:block;text-align:center;text-decoration:none;color:#fff;background:' + NAVY + ';padding:11px;border-radius:6px">Retour au menu</a></div></div>'));
         return;
       }
       de.classList.remove('agrlock');
@@ -419,7 +419,7 @@
       }).then(function (r) { if (!r.ok) return errFrom(r).then(function (e) { throw e; }); });
     }
   };
-  window.agriCloud = { enabled: true, scans: scans, role: function () { return prof && prof.role; }, ready: ready };
+  window.agriCloud = { enabled: true, scans: scans, role: function () { return prof && prof.role; }, ready: ready, api: api, errFrom: errFrom };
 
   /* ---------- Bouton et panneau utilisateur ---------- */
   function addUserBtn() {

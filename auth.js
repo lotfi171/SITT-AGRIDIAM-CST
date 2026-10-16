@@ -95,7 +95,7 @@
     var g = $('#agrgate'); if (g) g.remove();
     var setup = mode === 'setup';
     g = el('<div id="agrgate"><form class="agrc" autocomplete="on">' +
-      '<img src="/icon-192.png" alt="">' +
+      '<img src="icon-192.png" alt="">' +
       '<h1>AGRIDIAM</h1>' +
       '<p class="s">' + (setup ? 'Première utilisation : crée le compte administrateur.' : 'Connecte-toi pour accéder à l\u2019application.') + '</p>' +
       '<label for="agre">Adresse e-mail</label><input id="agre" type="email" name="username" autocomplete="username" required>' +

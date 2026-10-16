@@ -1,0 +1,482 @@
+<!DOCTYPE html><html lang="fr"><head><script src="config.js"></script><script src="cloud.js"></script><script src="auth.js"></script><script src="suivi-donnees.js"></script><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Suivi"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1F3864"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>AGRIDIAM Suivi versements</title>
+<script src="xlsx.full.min.js"></script>
+<style>
+:root{--navy:#1F3864;--yel:#FFFF00;--bg:#f4f6fa;--line:#d5dae3;--red:#c00000;--green:#1e7b34;--orange:#b45f06}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;background:var(--bg);color:#1b1b1b}
+header{background:var(--navy);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header img{height:38px;background:#fff;border-radius:4px;padding:2px}
+header h1{font-size:17px;margin:0;flex:1;min-width:180px}
+header a,header button{color:#fff;background:#2f4f8f;border:0;border-radius:5px;padding:7px 11px;font-size:13px;cursor:pointer;text-decoration:none}
+header a:hover,header button:hover{background:#3d63b0}
+#login{max-width:340px;margin:60px auto;background:#fff;padding:22px;border-radius:10px;box-shadow:0 2px 10px #0002}
+#login h2{margin-top:0;color:var(--navy)}
+input,select,button,textarea{font-family:inherit;font-size:14px}
+input[type=text],input[type=email],input[type=password],input[type=number],select{width:100%;padding:8px;border:1px solid var(--line);border-radius:5px;background:#fff}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:5px;padding:8px 13px;cursor:pointer}
+.btn.sec{background:#e3e8f2;color:var(--navy)}
+.btn.red{background:var(--red)}
+.btn.green{background:var(--green)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sm{padding:4px 8px;font-size:12px}
+#app{display:none}
+nav{display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px 0;background:#e9edf5;border-bottom:2px solid var(--navy)}
+nav button{border:0;background:#cfd8ea;color:var(--navy);padding:9px 14px;border-radius:6px 6px 0 0;cursor:pointer;font-weight:bold}
+nav button.on{background:var(--navy);color:#fff}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px}
+.bar select,.bar input{width:auto;min-width:130px}
+main{padding:0 14px 40px}
+.tw{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{background:var(--navy);color:#fff;padding:7px 8px;text-align:left;position:sticky;top:0;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid #e6e9f0;vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#eef3fc}
+.num{text-align:right;white-space:nowrap}
+.yel{background:var(--yel)!important;font-weight:bold}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:bold;white-space:nowrap}
+.t-v{background:#d9f0de;color:var(--green)}.t-p{background:#fde8c8;color:var(--orange)}.t-r{background:#fbd9d9;color:var(--red)}
+.chk{background:#fff1b8;color:#7a5b00}
+.small{font-size:12px;color:#555}
+.cards{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 14px;min-width:160px}
+.card b{display:block;font-size:17px;color:var(--navy)}
+#modal{display:none;position:fixed;inset:0;background:#0007;z-index:50;align-items:flex-start;justify-content:center;overflow:auto;padding:20px 8px}
+#modal .box{background:#fff;border-radius:10px;max-width:900px;width:100%;padding:16px}
+#modal h3{margin:0 0 8px;color:var(--navy)}
+#toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:6px;display:none;z-index:99;max-width:90%}
+.msg{padding:9px 12px;border-radius:6px;margin:8px 0}
+.msg.err{background:#fbd9d9;color:var(--red)}.msg.ok{background:#d9f0de;color:var(--green)}
+.sec-t{margin:16px 0 6px;color:var(--navy);font-size:15px}
+.printhead{display:none}
+@media print{
+  header,nav,.bar,.noprint,#toast,#modal .noprint{display:none!important}
+  body{background:#fff}
+  .printhead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .printhead img{height:46px}
+  .tw{border:0;overflow:visible}
+  th{position:static;background:#1F3864!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .yel,.tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #modal{position:static;background:none;padding:0;display:block}
+  #modal .box{box-shadow:none;max-width:none}
+}
+
+header{padding-top:calc(8px + env(safe-area-inset-top,0px))}
+main{padding-bottom:90px}
+</style></head><body>
+<div id="app">
+<header>
+  <img src="icon-192.png" alt="AGRIDIAM">
+  <h1>Suivi des versements clients</h1><span id="saved" style="font-size:12px;color:#cfe3ff">💾 Enregistrement automatique</span>
+</header>
+<nav id="tabs"></nav>
+<div class="bar noprint">
+  <label>Année <select id="f-annee" onchange="state.annee=this.value;render()"></select></label>
+  <input type="text" id="f-q" placeholder="Rechercher un client, T2, facture, banque…" oninput="state.q=this.value;render()" style="min-width:240px">
+  <button class="btn sec" onclick="chargerTout()">Actualiser</button>
+  <button class="btn sec" onclick="exporterExcel()">⬇️ Excel</button>
+</div>
+<main id="main"></main>
+</div>
+<div id="modal"><div class="box" id="modal-box"></div></div>
+<div id="toast"></div>
+<script>
+
+/* ============ Outils ============ */
+const LOGO="icon-192.png";
+const nf=new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=x=>nf.format(Number(x)||0);
+const r2=x=>Math.round((Number(x)||0)*100)/100;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fdate=d=>d?d.split('-').reverse().join('/'):'';
+const $=id=>document.getElementById(id);
+function toast(t,ms=3500){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms)}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+function normName(s){return String(s||'').toUpperCase().replace(/[^A-Z0-9 ]+/g,' ').replace(/\s+/g,' ').trim()}
+function bigrams(s){const o=[];for(let i=0;i<s.length-1;i++)o.push(s.slice(i,i+2));return o}
+function dice(a,b){if(a===b)return 1;if(a.length<2||b.length<2)return 0;const A=bigrams(a),B=bigrams(b);const m=new Map();A.forEach(x=>m.set(x,(m.get(x)||0)+1));let h=0;B.forEach(x=>{if(m.get(x)>0){h++;m.set(x,m.get(x)-1)}});return 2*h/(A.length+B.length)}
+function sameName(a,b){
+  a=normName(a);b=normName(b);if(!a||!b)return false;if(a===b)return true;
+  const ta=a.split(' ').filter(w=>w.length>=4),tb=b.split(' ').filter(w=>w.length>=4);
+  if(ta.length&&tb.length){const sa=new Set(ta),sb=new Set(tb);const inter=ta.filter(w=>sb.has(w)).length;
+    if(inter>=1&&(inter===sa.size||inter===sb.size))return true}
+  return dice(a,b)>=0.86;
+}
+const TYPES={exact_nom:'Nom + montant exact',exact_montant:'Montant exact',partiel:'Versement partiel',cumul:'Plusieurs entrées du même nom',combinaison:'Plusieurs clients',avant_entree:"Versement avant l'entrée",manuel:'Manuel'};
+
+/* ============ Données (Supabase, avec la connexion du site) ============ */
+const state={tab:'clients',annee:'all',q:'',client:null,E:[],D:[],L:[],proposals:[]};
+const DB_NAME='agridiam-suivi-v1';
+let LDB=null,memOnly=false;
+function emptyDB(){return {suivi_entrees:[],suivi_versements:[],suivi_liens:[],seq:{suivi_entrees:1,suivi_versements:1,suivi_liens:1}}}
+function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open(DB_NAME,1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function kv(mode,fn){const d=await idbOpen();return new Promise((res,rej)=>{const t=d.transaction('kv',mode);const r=fn(t.objectStore('kv'));t.oncomplete=()=>{d.close();res(r&&r.result)};t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})}
+const kvGet=k=>kv('readonly',s=>s.get(k));
+const kvPut=(k,v)=>kv('readwrite',s=>s.put(v,k));
+const kvDel=k=>kv('readwrite',s=>s.delete(k));
+const kvKeys=()=>kv('readonly',s=>s.getAllKeys());
+function setSaved(ok){const e=$('saved');if(!e)return;if(ok){const d=new Date();e.style.color='#cfe3ff';e.textContent='💾 Enregistré '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}else{e.style.color='#ffb4a9';e.textContent="⚠️ Enregistrement impossible : fais une sauvegarde (fichier)"}}
+let saveChain=Promise.resolve();
+function persist(){
+  const json=JSON.stringify(LDB);
+  saveChain=saveChain.then(async()=>{
+    if(memOnly){setSaved(false);return}
+    try{
+      await kvPut('data',json);
+      const day=new Date().toISOString().slice(0,10);
+      if(await kvGet('bk-'+day)===undefined){
+        await kvPut('bk-'+day,json);
+        const ks=(await kvKeys()).filter(k=>String(k).startsWith('bk-')).sort();
+        for(const k of ks.slice(0,Math.max(0,ks.length-14)))await kvDel(k);
+      }
+      setSaved(true);
+    }catch(e){setSaved(false)}
+  });
+  return saveChain;
+}
+function seedFrom(J){
+  const D=emptyDB();
+  J.entrees.forEach(e=>D.suivi_entrees.push(Object.assign({id:D.seq.suivi_entrees++},e)));
+  J.versements.forEach(v=>D.suivi_versements.push(Object.assign({id:D.seq.suivi_versements++},v)));
+  const ke=new Map(D.suivi_entrees.map(e=>[e.annee+'/'+e.ligne,e.id])),kd=new Map(D.suivi_versements.map(v=>[v.annee+'/'+v.ligne,v.id]));
+  J.liens.forEach(l=>{const a=ke.get(l.e.join('/')),b=kd.get(l.v.join('/'));if(a&&b)D.suivi_liens.push({id:D.seq.suivi_liens++,entree_id:a,versement_id:b,montant:l.montant,type:l.type,a_verifier:l.a_verifier})});
+  return D;
+}
+async function loadLocal(){
+  try{const raw=await kvGet('data');if(raw){LDB=JSON.parse(raw);try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}setSaved(true);return}}catch(e){memOnly=true}
+  LDB=seedFrom(window.SUIVI_SEED||{entrees:[],versements:[],liens:[]});
+  if(!memOnly){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}await persist()}else setSaved(false);
+}
+async function rest(method,path,body,prefer){
+  const [t,qs]=path.split('?');const q=new URLSearchParams(qs||'');const T=LDB[t];
+  if(!T)throw new Error('table inconnue '+t);
+  if(method==='GET'){const lim=+q.get('limit')||1000,off=+q.get('offset')||0;return T.slice().sort((a,b)=>a.id-b.id).slice(off,off+lim).map(x=>Object.assign({},x))}
+  if(method==='POST'){
+    const rows=Array.isArray(body)?body:[body],oc=q.get('on_conflict');
+    for(const r of rows){const ex=oc?T.find(x=>x.annee===r.annee&&x.ligne===r.ligne):null;if(ex)Object.assign(ex,r);else T.push(Object.assign({id:LDB.seq[t]++},r))}
+  }else if(method==='PATCH'){const id=+q.get('id').replace('eq.','');const x=T.find(y=>y.id===id);if(x)Object.assign(x,body)}
+  else if(method==='DELETE'){const v=q.get('id');if(v.startsWith('gt.'))T.length=0;else{const id=+v.replace('eq.','');const i=T.findIndex(y=>y.id===id);if(i>=0)T.splice(i,1)}}
+  await persist();return null;
+}
+async function fetchAll(table){
+  let out=[],off=0;
+  while(true){const rows=await rest('GET',`${table}?select=*&order=id.asc&limit=1000&offset=${off}`);out=out.concat(rows);if(rows.length<1000)break;off+=1000}
+  return out;
+}
+let scanCount=new Map();
+async function chargerScans(){
+  scanCount=new Map();
+  try{
+    const rows=await new Promise((res,rej)=>{const q=indexedDB.open('agridiam-scans-v1',1);q.onupgradeneeded=()=>q.result.createObjectStore('scans',{keyPath:'id'});
+      q.onsuccess=()=>{const d=q.result;const r=d.transaction('scans').objectStore('scans').getAll();r.onsuccess=()=>{d.close();res(r.result)};r.onerror=()=>rej(r.error)};q.onerror=()=>rej(q.error)});
+    rows.filter(r=>r.mod==='suivi').forEach(r=>{const m=String(r.label||'').match(/(\d{4})\/(\d+)/);if(m){const k=m[1]+'/'+m[2];scanCount.set(k,(scanCount.get(k)||0)+1)}});
+  }catch(e){}
+}
+async function chargerTout(){
+  try{
+    const [E,D,L]=await Promise.all([fetchAll('suivi_entrees'),fetchAll('suivi_versements'),fetchAll('suivi_liens')]);
+    E.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.annee-b.annee||a.ligne-b.ligne);
+    D.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.annee-b.annee||a.ligne-b.ligne);
+    state.E=E;state.D=D;state.L=L;await chargerScans();indexer();majAnnees();render();
+  }catch(e){toast('Erreur de chargement : '+(e.message||e)+'',8000);render()}
+}
+let Em=new Map(),Dm=new Map(),LbyE=new Map(),LbyD=new Map();
+function indexer(){
+  Em=new Map(state.E.map(e=>[e.id,e]));Dm=new Map(state.D.map(d=>[d.id,d]));
+  LbyE=new Map();LbyD=new Map();
+  state.L.forEach(l=>{(LbyE.get(l.entree_id)||LbyE.set(l.entree_id,[]).get(l.entree_id)).push(l);(LbyD.get(l.versement_id)||LbyD.set(l.versement_id,[]).get(l.versement_id)).push(l)});
+  state.E.forEach(e=>{e.verse=r2((LbyE.get(e.id)||[]).reduce((s,l)=>s+Number(l.montant),0));e.reste=r2(e.montant-e.verse);e.statut=e.reste<=0.004?'V':(e.verse>0?'P':'R')});
+  state.D.forEach(d=>{d.relie=r2((LbyD.get(d.id)||[]).reduce((s,l)=>s+Number(l.montant),0));d.nonrel=r2(d.montant-d.relie)});
+}
+function majAnnees(){
+  const ys=[...new Set(state.E.map(e=>e.annee).concat(state.D.map(d=>d.annee)))].sort();
+  const s=$('f-annee');s.innerHTML='<option value="all">Toutes</option>'+ys.map(y=>`<option value="${y}">${y}</option>`).join('');s.value=state.annee;
+}
+const okAnnee=a=>state.annee==='all'||String(a)===String(state.annee);
+const okQ=(...t)=>{const q=normName(state.q);return !q||normName(t.join(' ')).includes(q)};
+
+/* ============ Onglets ============ */
+const TABS=[['clients','Clients'],['entrees','Entrées'],['versements','Versements'],['verif','À vérifier'],['auto','Rapprocher'],['import','Importer']];
+function render(){
+  $('tabs').innerHTML=TABS.map(([k,t])=>`<button class="${state.tab===k?'on':''}" onclick="state.tab='${k}';state.client=null;render()">${t}</button>`).join('');
+  const f={clients:vClients,entrees:vEntrees,versements:vVersements,verif:vVerif,auto:vAuto,import:vImport}[state.tab];
+  $('main').innerHTML='<div class="printhead"><img src="'+LOGO+'"><b>SARL AGRIDIAM : suivi des versements</b></div>'+f();
+  if(state.tab==='import')listBackups();
+}
+const tagS=s=>s==='V'?'<span class="tag t-v">VERSÉ</span>':s==='P'?'<span class="tag t-p">PARTIEL</span>':'<span class="tag t-r">RESTE</span>';
+
+/* ---- Clients ---- */
+function vClients(){
+  if(state.client)return vClientDetail();
+  const m=new Map();
+  state.E.filter(e=>okAnnee(e.annee)&&okQ(e.remettant,e.t2,e.facture)).forEach(e=>{
+    const c=m.get(e.remettant)||{n:e.remettant,nb:0,tot:0,verse:0,reste:0};
+    c.nb++;c.tot+=e.montant;c.verse+=e.verse;c.reste+=e.reste;m.set(e.remettant,c)});
+  const rows=[...m.values()].sort((a,b)=>b.reste-a.reste);
+  const T=rows.reduce((s,c)=>({tot:s.tot+c.tot,verse:s.verse+c.verse,reste:s.reste+c.reste}),{tot:0,verse:0,reste:0});
+  return `<div class="cards"><div class="card">Total entrées<b>${fmt(T.tot)}</b></div><div class="card">Versé<b>${fmt(T.verse)}</b></div><div class="card">Reste à verser<b>${fmt(T.reste)}</b></div></div>
+  <div class="tw"><table><tr><th>Client (remettant)</th><th class="num">Entrées</th><th class="num">Total</th><th class="num">Versé</th><th class="num">RESTE</th></tr>
+  ${rows.map(c=>`<tr class="click" onclick="state.client=${JSON.stringify(c.n).replace(/"/g,'&quot;')};render()"><td>${esc(c.n)}</td><td class="num">${c.nb}</td><td class="num">${fmt(c.tot)}</td><td class="num">${fmt(c.verse)}</td><td class="num yel">${fmt(c.reste)}</td></tr>`).join('')}
+  <tr><td><b>TOTAL</b></td><td></td><td class="num"><b>${fmt(T.tot)}</b></td><td class="num"><b>${fmt(T.verse)}</b></td><td class="num yel">${fmt(T.reste)}</td></tr></table></div>`;
+}
+function vClientDetail(){
+  const es=state.E.filter(e=>e.remettant===state.client&&okAnnee(e.annee));
+  const tot=es.reduce((s,e)=>s+e.montant,0),res=es.reduce((s,e)=>s+e.reste,0);
+  return `<p class="noprint"><button class="btn sec" onclick="state.client=null;render()">← Tous les clients</button></p>
+  <h3 style="color:var(--navy)">${esc(state.client)}</h3>
+  <div class="cards"><div class="card">Entrées<b>${fmt(tot)}</b></div><div class="card">Versé<b>${fmt(tot-res)}</b></div><div class="card">Reste<b>${fmt(res)}</b></div></div>
+  <div class="tw"><table><tr><th>Année / ligne</th><th>Date</th><th>T2 (facture)</th><th>N° facture</th><th class="num">Montant</th><th>Statut</th><th>Versements (date, banque, montant, délai)</th><th class="num">Reste</th></tr>
+  ${es.map(e=>`<tr><td>${e.annee} / ${e.ligne}</td><td>${fdate(e.date)}</td><td>${esc(e.t2)}</td><td>${esc(e.facture)}</td><td class="num">${fmt(e.montant)}</td><td>${tagS(e.statut)}</td><td>${lienTxt(e)}</td><td class="num yel">${fmt(e.reste)}</td></tr>`).join('')}</table></div>`;
+}
+function lienTxt(e){
+  return (LbyE.get(e.id)||[]).map(l=>{const d=Dm.get(l.versement_id);if(!d)return '';
+    return `<div>${fdate(d.date)} · ${esc(d.banque)} · <b>${fmt(l.montant)}</b> · ${daysBetween(e.date,d.date)} j ${l.a_verifier?'<span class="tag chk">à vérifier</span>':''}</div>`}).join('');
+}
+
+/* ---- Entrées ---- */
+function vEntrees(){
+  const fs=state.fStat||'all';
+  const rows=state.E.filter(e=>okAnnee(e.annee)&&okQ(e.remettant,e.t2,e.facture)&&(fs==='all'||(fs==='RP'?e.statut!=='V':e.statut===fs)));
+  return `<div class="bar noprint" style="padding-left:0"><select onchange="state.fStat=this.value;render()">
+   ${[['all','Tous les statuts'],['RP','Reste ou partiel'],['R','Reste seulement'],['P','Partiel'],['V','Versé']].map(([v,t])=>`<option value="${v}" ${fs===v?'selected':''}>${t}</option>`).join('')}</select>
+   <span class="small">${rows.length} lignes, reste ${fmt(rows.reduce((s,e)=>s+e.reste,0))}</span></div>
+  <div class="tw"><table><tr><th>Année / ligne</th><th>Date</th><th>Client</th><th>T2</th><th>Facture</th><th class="num">Montant</th><th>Statut</th><th>Versements</th><th class="num">Reste</th><th class="noprint"></th></tr>
+  ${rows.map(e=>`<tr><td>${e.annee} / ${e.ligne}</td><td>${fdate(e.date)}</td><td>${esc(e.remettant)}</td><td>${esc(e.t2)}</td><td>${esc(e.facture)}</td><td class="num">${fmt(e.montant)}</td><td>${tagS(e.statut)}</td><td>${lienTxt(e)}</td><td class="num yel">${fmt(e.reste)}</td><td class="noprint">${e.reste>0.004?`<button class="btn sm" onclick="modalEntree(${e.id})">Relier</button>`:''}</td></tr>`).join('')}</table></div>`;
+}
+
+/* ---- Versements ---- */
+function vVersements(){
+  const fs=state.fVers||'all';
+  const rows=state.D.filter(d=>okAnnee(d.annee)&&okQ(d.nom,d.banque)&&(fs==='all'||(fs==='NR'?d.nonrel>0.004:d.nonrel<=0.004)));
+  return `<div class="bar noprint" style="padding-left:0"><select onchange="state.fVers=this.value;render()">
+   ${[['all','Tous les versements'],['NR','Sans origine (non reliés)'],['OK','Reliés']].map(([v,t])=>`<option value="${v}" ${fs===v?'selected':''}>${t}</option>`).join('')}</select>
+   <span class="small">${rows.length} versements, non reliés ${fmt(rows.reduce((s,d)=>s+Math.max(d.nonrel,0),0))}</span></div>
+  <div class="tw"><table><tr><th>Année / ligne</th><th>Date</th><th>Banque</th><th>Nom écrit</th><th class="num">Montant</th><th>Entrées couvertes</th><th class="num">Non relié</th><th class="noprint">Pièce</th><th class="noprint"></th></tr>
+  ${rows.map(d=>`<tr><td>${d.annee} / ${d.ligne}</td><td>${fdate(d.date)}</td><td>${esc(d.banque)}</td><td>${esc(d.nom)}</td><td class="num">${fmt(d.montant)}</td><td>${(LbyD.get(d.id)||[]).map(l=>{const e=Em.get(l.entree_id);return e?`<div>${esc(e.remettant)} (T2 ${esc(e.t2)}) ${fdate(e.date)} : <b>${fmt(l.montant)}</b> ${l.a_verifier?'<span class="tag chk">à vérifier</span>':''}</div>`:''}).join('')}</td>
+   <td class="num ${d.nonrel>0.004?'':'yel'}" style="${d.nonrel>0.004?'color:var(--red);font-weight:bold':''}">${fmt(d.nonrel)}</td>
+   <td class="noprint"><button class="btn sm sec" onclick="scanPanel(${d.id})">📎 ${scanCount.get(d.annee+'/'+d.ligne)||'Scanner'}</button></td>
+   <td class="noprint">${d.nonrel>0.004?`<button class="btn sm" onclick="modalVersement(${d.id})">Relier</button>`:''}</td></tr>`).join('')}</table></div>`;
+}
+function scanPanel(id){
+  const d=Dm.get(id);
+  if(window.agriScansPanel)window.agriScansPanel('Versement '+d.annee+'/'+d.ligne);else toast('Scans indisponibles');
+}
+function exporterExcel(){
+  const t=document.querySelector('#main table');if(!t)return toast('Rien à exporter');
+  XLSX.writeFile(XLSX.utils.table_to_book(t,{raw:false}),'suivi_versements_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+/* ---- À vérifier ---- */
+function vVerif(){
+  const rows=state.L.filter(l=>l.a_verifier).map(l=>({l,e:Em.get(l.entree_id),d:Dm.get(l.versement_id)})).filter(x=>x.e&&x.d&&(okAnnee(x.d.annee)||okAnnee(x.e.annee))&&okQ(x.e.remettant,x.e.t2,x.d.nom,x.d.banque));
+  return `<p class="small">Rapprochements trouvés par la méthode automatique mais pas certains. Valide ceux qui sont justes, supprime les autres (l'entrée redevient « reste à verser »).</p>
+  <div class="tw"><table><tr><th>Versement</th><th>Entrée</th><th class="num">Montant relié</th><th>Type</th><th class="noprint"></th></tr>
+  ${rows.map(({l,e,d})=>`<tr><td>${d.annee}/${d.ligne} · ${fdate(d.date)} · ${esc(d.banque)}<br><b>${esc(d.nom)}</b> · ${fmt(d.montant)}</td><td>${e.annee}/${e.ligne} · ${fdate(e.date)}<br><b>${esc(e.remettant)}</b> (T2 ${esc(e.t2)}) · ${fmt(e.montant)}</td><td class="num">${fmt(l.montant)}</td><td>${TYPES[l.type]||esc(l.type)}</td>
+   <td class="noprint" style="white-space:nowrap"><button class="btn sm green" onclick="validerLien(${l.id})">Valider</button> <button class="btn sm red" onclick="supprimerLien(${l.id})">Supprimer</button></td></tr>`).join('')}</table></div><p class="small">${rows.length} liens à vérifier</p>`;
+}
+async function validerLien(id){try{await rest('PATCH','suivi_liens?id=eq.'+id,{a_verifier:false},'return=minimal')}catch(e){return toast(e.message,5000)}const l=state.L.find(x=>x.id===id);if(l)l.a_verifier=false;render()}
+async function supprimerLien(id){if(!confirm('Supprimer ce rapprochement ?'))return;try{await rest('DELETE','suivi_liens?id=eq.'+id)}catch(e){return toast(e.message,5000)}state.L=state.L.filter(x=>x.id!==id);indexer();render()}
+
+/* ---- Relier à la main ---- */
+function modal(html){$('modal-box').innerHTML=html;$('modal').style.display='flex'}
+function fermer(){$('modal').style.display='none'}
+function modalVersement(id){
+  const d=Dm.get(id);
+  const cand=state.E.filter(e=>e.reste>0.004).map(e=>({e,n:sameName(d.nom,e.t2)||sameName(d.nom,e.remettant)}))
+    .sort((a,b)=>(b.n-a.n)||(a.e.date||'').localeCompare(b.e.date||'')).slice(0,150);
+  state.ctx={kind:'dep',id,cand};
+  modal(`<h3>Relier le versement ${d.annee}/${d.ligne}</h3>
+  <p>${fdate(d.date)} · ${esc(d.banque)} · <b>${esc(d.nom)}</b> · montant ${fmt(d.montant)} · à relier <b>${fmt(d.nonrel)}</b></p>
+  <p class="noprint"><button class="btn sec sm" onclick="remplirAuto()">Remplir dans l'ordre (même nom d'abord)</button></p>
+  <div class="tw" style="max-height:55vh;overflow:auto"><table><tr><th></th><th>Entrée</th><th>Client / T2</th><th class="num">Reste</th><th class="num">Montant à relier</th></tr>
+  ${cand.map((c,i)=>`<tr><td>${c.n?'<span class="tag t-v">même nom</span>':''}</td><td>${c.e.annee}/${c.e.ligne} · ${fdate(c.e.date)}</td><td>${esc(c.e.remettant)}<br><span class="small">T2 ${esc(c.e.t2)} ${esc(c.e.facture)}</span></td><td class="num">${fmt(c.e.reste)}</td><td><input type="number" step="0.01" min="0" id="m${i}" oninput="totalModal()" style="width:130px"></td></tr>`).join('')}</table></div>
+  <p>Total saisi : <b id="tm">0,00</b> sur ${fmt(d.nonrel)}</p>
+  <p><button class="btn" onclick="sauverModal()">Enregistrer</button> <button class="btn sec" onclick="fermer()">Annuler</button></p>`);
+}
+function modalEntree(id){
+  const e=Em.get(id);
+  const cand=state.D.filter(d=>d.nonrel>0.004).map(d=>({d,n:sameName(d.nom,e.t2)||sameName(d.nom,e.remettant)}))
+    .sort((a,b)=>(b.n-a.n)||(a.d.date||'').localeCompare(b.d.date||'')).slice(0,150);
+  state.ctx={kind:'ent',id,cand};
+  modal(`<h3>Relier l'entrée ${e.annee}/${e.ligne}</h3>
+  <p>${fdate(e.date)} · <b>${esc(e.remettant)}</b> (T2 ${esc(e.t2)}) · montant ${fmt(e.montant)} · reste <b>${fmt(e.reste)}</b></p>
+  <div class="tw" style="max-height:55vh;overflow:auto"><table><tr><th></th><th>Versement</th><th>Nom écrit</th><th class="num">Non relié</th><th class="num">Montant à relier</th></tr>
+  ${cand.map((c,i)=>`<tr><td>${c.n?'<span class="tag t-v">même nom</span>':''}</td><td>${c.d.annee}/${c.d.ligne} · ${fdate(c.d.date)} · ${esc(c.d.banque)}</td><td>${esc(c.d.nom)}</td><td class="num">${fmt(c.d.nonrel)}</td><td><input type="number" step="0.01" min="0" id="m${i}" oninput="totalModal()" style="width:130px"></td></tr>`).join('')}</table></div>
+  <p>Total saisi : <b id="tm">0,00</b> sur ${fmt(e.reste)}</p>
+  <p><button class="btn" onclick="sauverModal()">Enregistrer</button> <button class="btn sec" onclick="fermer()">Annuler</button></p>`);
+}
+function lireModal(){return state.ctx.cand.map((c,i)=>({c,m:r2(parseFloat(($('m'+i)||{}).value)||0)})).filter(x=>x.m>0)}
+function totalModal(){$('tm').textContent=fmt(lireModal().reduce((s,x)=>s+x.m,0))}
+function remplirAuto(){
+  const d=Dm.get(state.ctx.id);let left=d.nonrel;
+  state.ctx.cand.forEach((c,i)=>{const el=$('m'+i);el.value='';if(c.n&&left>0.004){const t=Math.min(c.e.reste,left);el.value=t;left=r2(left-t)}});
+  totalModal();
+}
+async function sauverModal(){
+  const sel=lireModal();if(!sel.length)return toast('Rien à enregistrer');
+  const ctx=state.ctx,tot=r2(sel.reduce((s,x)=>s+x.m,0));
+  let rows,limit;
+  if(ctx.kind==='dep'){limit=Dm.get(ctx.id).nonrel;
+    if(sel.some(x=>x.m>x.c.e.reste+0.004))return toast('Un montant dépasse le reste de son entrée',5000);
+    rows=sel.map(x=>({entree_id:x.c.e.id,versement_id:ctx.id,montant:x.m,type:'manuel',a_verifier:false}))}
+  else{limit=Em.get(ctx.id).reste;
+    if(sel.some(x=>x.m>x.c.d.nonrel+0.004))return toast('Un montant dépasse le non relié du versement',5000);
+    rows=sel.map(x=>({entree_id:ctx.id,versement_id:x.c.d.id,montant:x.m,type:'manuel',a_verifier:false}))}
+  if(tot>limit+0.004)return toast('Le total dépasse le montant disponible',5000);
+  try{await rest('POST','suivi_liens',rows,'return=minimal')}catch(e){return toast(e.message,6000)}
+  fermer();toast('Rapprochement enregistré');chargerTout();
+}
+
+/* ---- Rapprochement automatique ---- */
+function combos(items,A,key,maxN,cap){
+  items=items.slice(-cap);let best=null;
+  function rec(start,n,sum,pick){
+    if(best)return;
+    if(Math.abs(sum-A)<0.005&&pick.length===n){best=pick.slice();return}
+    if(pick.length>=n)return;
+    for(let i=start;i<items.length;i++){const v=key(items[i]);if(sum+v>A+0.005)continue;pick.push(items[i]);rec(i+1,n,sum+v,pick);pick.pop();if(best)return}
+  }
+  for(let n=1;n<=maxN&&!best;n++)rec(0,n,0,[]);
+  return best;
+}
+function exactCombo(pool,A,rem){
+  // groupes par client + jour (une visite), puis lignes seules
+  const g=new Map();pool.forEach(e=>{const k=e.remettant+'|'+e.date;(g.get(k)||g.set(k,[]).get(k)).push(e)});
+  const units=[...g.values()].map(items=>({items,s:r2(items.reduce((s,e)=>s+rem.get(e.id),0))}));
+  let b=combos(units.filter(u=>u.items.length>1),A,u=>u.s,1,40);if(b)return b[0].items.map(e=>({e,m:rem.get(e.id)}));
+  b=combos(pool,A,e=>rem.get(e.id),1,60);if(b)return b.map(e=>({e,m:rem.get(e.id)}));
+  b=combos(units,A,u=>u.s,4,20);if(b)return b.flatMap(u=>u.items).map(e=>({e,m:rem.get(e.id)}));
+  b=combos(pool,A,e=>rem.get(e.id),3,18);if(b)return b.map(e=>({e,m:rem.get(e.id)}));
+  return null;
+}
+function autoMatch(years){
+  const rem=new Map(state.E.map(e=>[e.id,e.reste])),non=new Map(state.D.map(d=>[d.id,d.nonrel]));
+  const out=[];
+  const deps=state.D.filter(d=>non.get(d.id)>0.004&&years.includes(String(d.annee))).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ligne-b.ligne);
+  for(const d of deps){
+    const A=non.get(d.id);
+    const avail=state.E.filter(e=>rem.get(e.id)>0.004&&e.date&&d.date&&e.date<=d.date);
+    const nm=avail.filter(e=>sameName(d.nom,e.t2)||sameName(d.nom,e.remettant));
+    let sol=null,type='',chk=false;
+    if(d.nom&&nm.length){sol=exactCombo(nm,A,rem);type='exact_nom'}
+    if(!sol){const win=avail.filter(e=>daysBetween(e.date,d.date)<=35);sol=exactCombo(win,A,rem);type='exact_montant';chk=!!sol&&!d.nom?false:!!sol}
+    if(!sol&&nm.length){const one=nm.find(e=>rem.get(e.id)>=A-0.004);if(one){sol=[{e:one,m:A}];type='partiel';chk=true}}
+    if(!sol&&nm.length&&nm.reduce((s,e)=>s+rem.get(e.id),0)>=A-0.004){let left=A;sol=[];for(const e of nm){const t=Math.min(rem.get(e.id),left);sol.push({e,m:r2(t)});left=r2(left-t);if(left<=0.004)break}type='cumul';chk=true}
+    if(sol){sol.forEach(x=>rem.set(x.e.id,r2(rem.get(x.e.id)-x.m)));non.set(d.id,0);out.push({d,sol,type,chk,ok:true})}
+  }
+  return out;
+}
+function vAuto(){
+  const P=state.proposals||[];
+  return `<p class="small">Cherche, pour les versements pas encore reliés, les entrées correspondantes : même nom + montant exact, puis versement partiel, puis cumul de plusieurs entrées du même nom. Rien n'est enregistré avant ta validation.</p>
+  <p class="noprint"><button class="btn" onclick="lancerAuto()">Chercher les rapprochements (${state.annee==='all'?'toutes les années':state.annee})</button>
+  ${P.length?`<button class="btn green" onclick="enregistrerAuto()">Enregistrer la sélection</button>`:''}</p>
+  ${P.length?`<div class="tw"><table><tr><th></th><th>Versement</th><th>Entrées proposées</th><th>Type</th></tr>
+  ${P.map((p,i)=>`<tr><td><input type="checkbox" ${p.ok?'checked':''} onchange="state.proposals[${i}].ok=this.checked"></td><td>${p.d.annee}/${p.d.ligne} · ${fdate(p.d.date)}<br><b>${esc(p.d.nom)}</b> · ${fmt(p.d.nonrel)}</td>
+  <td>${p.sol.map(x=>`<div>${x.e.annee}/${x.e.ligne} · ${fdate(x.e.date)} · ${esc(x.e.remettant)} (T2 ${esc(x.e.t2)}) : <b>${fmt(x.m)}</b></div>`).join('')}</td><td>${TYPES[p.type]} ${p.chk?'<span class="tag chk">à vérifier</span>':''}</td></tr>`).join('')}</table></div>`:'<p class="small">Aucune proposition pour le moment.</p>'}`;
+}
+function lancerAuto(){
+  const ys=state.annee==='all'?[...new Set(state.D.map(d=>String(d.annee)))]:[String(state.annee)];
+  state.proposals=autoMatch(ys);render();toast(state.proposals.length+' proposition(s)');
+}
+async function enregistrerAuto(){
+  const rows=[];state.proposals.filter(p=>p.ok).forEach(p=>p.sol.forEach(x=>rows.push({entree_id:x.e.id,versement_id:p.d.id,montant:x.m,type:p.type,a_verifier:p.chk})));
+  if(!rows.length)return toast('Rien de coché');
+  try{for(let i=0;i<rows.length;i+=500)await rest('POST','suivi_liens',rows.slice(i,i+500),'return=minimal')}catch(e){return toast(e.message,6000)}
+  state.proposals=[];toast(rows.length+' liens enregistrés');chargerTout();
+}
+
+/* ---- Import ---- */
+function vImport(){
+  const ys=[2023,2024,2025,2026,2027,2028,2029,2030];
+  return `<div class="msg ok noprint">💾 Enregistrement automatique : chaque modification est sauvegardée sur cet ordinateur, avec une copie de sécurité par jour. Actuellement : ${state.E.length} entrées, ${state.D.length} versements, ${state.L.length} rapprochements.</div>
+  <h3 class="sec-t">1. Sauvegarde dans un fichier</h3>
+  <p class="small">À faire de temps en temps, et avant de changer d'ordinateur ou de navigateur. <span id="last-bk"></span></p>
+  <p><button class="btn" onclick="exportBackup()">💾 Sauvegarder (fichier)</button></p>
+  <p><input type="file" id="f-bk" accept=".json" style="width:auto"> <button class="btn sec" onclick="importBackup()">📂 Restaurer ce fichier</button></p>
+  <h3 class="sec-t">2. Ajouter une année ou la mettre à jour depuis un brouillard de caisse Excel</h3>
+  <p class="small">Fichier .xlsx au même format que CAISSE_2025 / CAISSE_2026 (colonnes Date, REMETTANT, T2, Entrée, Sortie). Les lignes déjà présentes (même année et même numéro de ligne) sont mises à jour, les rapprochements sont conservés. Ensuite, onglet « Rapprocher ».</p>
+  <p>Année : <select id="x-annee" style="width:auto">${ys.map(y=>`<option ${y===2026?'selected':''}>${y}</option>`).join('')}</select> <input type="file" id="f-xls" accept=".xlsx,.xlsm" style="width:auto"></p>
+  <p><button class="btn" onclick="importXlsx()">Importer le fichier Excel</button></p>
+  <h3 class="sec-t">3. Copies de sécurité automatiques</h3>
+  <div id="bk-list" class="small">Chargement…</div>
+  <h3 class="sec-t">4. Revenir aux données d'origine (2023 à 2026)</h3>
+  <p class="small">Efface tes rapprochements manuels et remet ceux d'origine. Une copie de sécurité est faite avant.</p>
+  <p><button class="btn red" onclick="resetSeed()">Réinitialiser</button></p>
+  <div id="imp-log"></div>`;
+}
+const logI=t=>{const e=$('imp-log');if(e)e.innerHTML+='<div class="small">'+esc(t)+'</div>'};
+async function upsertBatch(table,rows,conflict){
+  for(let i=0;i<rows.length;i+=400){await rest('POST',`${table}?on_conflict=${conflict}`,rows.slice(i,i+400),'resolution=merge-duplicates,return=minimal');logI(table+' : '+Math.min(i+400,rows.length)+' / '+rows.length)}
+}
+function downloadText(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+async function exportBackup(){
+  downloadText('suivi_versements_sauvegarde_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'agridiam-suivi',version:1,date:new Date().toISOString(),data:LDB}));
+  try{await kvPut('lastFileBackup',new Date().toISOString())}catch(e){}
+  toast('Fichier de sauvegarde créé');
+}
+function validDB(D){return D&&Array.isArray(D.suivi_entrees)&&Array.isArray(D.suivi_versements)&&Array.isArray(D.suivi_liens)&&D.seq}
+async function snapshotAvant(){try{await kvPut('bk-'+new Date().toISOString().slice(0,19).replace(/:/g,'-'),JSON.stringify(LDB))}catch(e){}}
+async function importBackup(){
+  const f=$('f-bk').files[0];if(!f)return toast('Choisir un fichier de sauvegarde');
+  try{
+    const J=JSON.parse(await f.text());const D=J.data||J;
+    if(!validDB(D))throw new Error("ce n'est pas une sauvegarde du Suivi");
+    if(!confirm('Remplacer toutes les données actuelles par ce fichier ?'))return;
+    await snapshotAvant();LDB=D;await persist();toast('Sauvegarde restaurée');await chargerTout();
+  }catch(e){toast('Restauration impossible : '+(e.message||e),6000)}
+}
+async function resetSeed(){
+  if(!confirm("Remettre les données d'origine 2023 à 2026 ? Tes rapprochements manuels seront effacés (une copie de sécurité est faite avant)."))return;
+  await snapshotAvant();LDB=seedFrom(window.SUIVI_SEED);await persist();toast("Données d'origine rechargées");await chargerTout();
+}
+async function listBackups(){
+  const box=$('bk-list');if(!box)return;
+  try{
+    const ks=(await kvKeys()).filter(k=>String(k).startsWith('bk-')).sort().reverse();
+    box.innerHTML=ks.length?ks.map(k=>{const t=String(k).slice(3);return `<div>${esc(t.replace('T',' à ').replace(/-(\d\d)-(\d\d)-(\d\d)$/,' $1:$2:$3'))} <button class="btn sm sec" onclick="restoreBk('${esc(k)}')">Restaurer</button></div>`}).join(''):'Aucune copie pour le moment.';
+    const lb=await kvGet('lastFileBackup');const e=$('last-bk');if(e)e.textContent=lb?'Dernière sauvegarde fichier : '+new Date(lb).toLocaleDateString('fr-FR')+'.':"Aucune sauvegarde fichier faite pour le moment.";
+  }catch(e){box.textContent='Copies indisponibles'}
+}
+async function restoreBk(k){
+  if(!confirm('Restaurer la copie du '+k.slice(3)+' ? Les données actuelles sont gardées dans une copie avant.'))return;
+  try{const raw=await kvGet(k);const D=JSON.parse(raw);if(!validDB(D))throw new Error('copie illisible');await snapshotAvant();LDB=D;await persist();toast('Copie restaurée');await chargerTout()}
+  catch(e){toast('Restauration impossible : '+(e.message||e),6000)}
+}
+function parseDateCell(v,year){
+  if(v instanceof Date){return new Date(Date.UTC(year,v.getMonth(),v.getDate()))}
+  if(typeof v==='string'){let m=v.trim().match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/);if(m)return new Date(Date.UTC(year,+m[2]-1,+m[1]));m=v.trim().match(/^(\d{2})(\d{2})\/(\d{4})$/);if(m)return new Date(Date.UTC(year,+m[2]-1,+m[1]))}
+  return null;
+}
+async function importXlsx(){
+  const f=$('f-xls').files[0];if(!f)return toast('Choisir un fichier Excel');
+  const year=parseInt($('x-annee').value);
+  try{
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];const R0=XLSX.utils.decode_range(ws['!ref']).s.r;const A=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+    let hr=-1;for(let i=0;i<15;i++){if((A[i]||[]).some(c=>/REMETTANT/i.test(String(c||''))))hr=i}
+    if(hr<0)throw new Error('Ligne « REMETTANT » introuvable');
+    const find=(rx,from,to)=>{for(let i=from;i<=to;i++){const r=A[i]||[];for(let c=0;c<r.length;c++)if(rx.test(String(r[c]||'')))return c}return -1};
+    const cR=find(/REMETTANT/i,hr,hr),cT=find(/^T2/i,hr,hr),cD=find(/^date/i,0,hr),cE=find(/entr/i,0,hr),cS=find(/sortie/i,0,hr),cK=find(/remarque/i,0,hr);
+    if([cR,cD,cE,cS].some(c=>c<0))throw new Error('Colonnes Date / Entrée / Sortie introuvables');
+    const ents=[],deps=[];let last=new Date(Date.UTC(year,0,1));
+    for(let i=hr+1;i<A.length;i++){
+      const r=A[i]||[];const rem=String(r[cR]||'').replace(/\s+/g,' ').trim(),t2=String(r[cT]||'').replace(/\s+/g,' ').trim();
+      if(/^(SOLDE|MOIS|MOI |TOTAL)/i.test(rem)||/^(SOLDE|MOIS|MOI |TOTAL)/i.test(t2))continue;
+      const e=typeof r[cE]==='number'?r[cE]:0,s=typeof r[cS]==='number'?r[cS]:0;if(!e&&!s)continue;
+      const d=parseDateCell(r[cD],year)||last;last=d;const iso=d.toISOString().slice(0,10);
+      if(e)ents.push({annee:year,ligne:i+R0+1,date:iso,remettant:rem.replace(/[\s\/\-]+$/,'').toUpperCase()||t2.toUpperCase(),t2:t2.toUpperCase(),facture:cK>=0?String(r[cK]||'').toUpperCase():'',montant:r2(e)});
+      if(s)deps.push({annee:year,ligne:i+R0+1,date:iso,banque:rem.toUpperCase(),nom:t2.toUpperCase(),montant:r2(s)});
+    }
+    await upsertBatch('suivi_entrees',ents,'annee,ligne');await upsertBatch('suivi_versements',deps,'annee,ligne');
+    logI(`Terminé : ${ents.length} entrées, ${deps.length} versements pour ${year}`);toast('Import terminé');await chargerTout();state.tab='import';render();
+  }catch(e){logI('ERREUR : '+(e.message||e));toast('Erreur d\'import',5000)}
+}
+
+/* ============ Démarrage ============ */
+window.addEventListener('load',async()=>{
+  $('modal').addEventListener('click',e=>{if(e.target.id==='modal')fermer()});
+  try{await loadLocal();await chargerTout()}catch(e){toast('Erreur de démarrage : '+(e.message||e),8000)}
+});
+</script>
+<a id="agrmenu" href="index.html" style="position:fixed;left:12px;bottom:12px;z-index:60;background:#b3261e;color:#fff;padding:8px 12px;border-radius:6px;font:13px Arial,sans-serif;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.3)">🏠 Menu</a><style>@media print{#agrmenu{display:none}}</style><script src="agri.js"></script></body></html>
